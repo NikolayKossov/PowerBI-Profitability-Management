@@ -1,0 +1,469 @@
+{
+  "name": "Analytics",
+  "compatibilityLevel": 1600,
+  "model": {
+    "culture": "pl-PL",
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "sourceQueryCulture": "en-US",
+    "expressions": [
+      {
+        "name": "DataRoot",
+        "kind": "m",
+        "expression": "\"C:/PowerBI/data\" meta [IsParameterQuery=true, Type=\"Text\", IsParameterQueryRequired=true]"
+      },
+      {
+        "name": "stg_sales",
+        "kind": "m",
+        "expression": "let\n    Source = Csv.Document(File.Contents(DataRoot & \"/raw/sales.csv\"), [Delimiter=\",\", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),\n    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),\n    Typed = Table.TransformColumnTypes(Headers, {{\"LineID\", type text}, {\"ShipmentID\", type text}, {\"Date\", type date}, {\"ClientID\", type text}, {\"ProductID\", type text}, {\"Quantity\", Int64.Type}, {\"GrossPLN\", type number}, {\"DiscountPLN\", type number}, {\"NetRevenuePLN\", type number}}, \"en-US\")\nin\n    Typed"
+      },
+      {
+        "name": "stg_cogs",
+        "kind": "m",
+        "expression": "let\n    Source = Csv.Document(File.Contents(DataRoot & \"/raw/cogs.csv\"), [Delimiter=\",\", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),\n    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),\n    Typed = Table.TransformColumnTypes(Headers, {{\"LineID\", type text}, {\"COGSPLN\", type number}}, \"en-US\")\nin\n    Typed"
+      },
+      {
+        "name": "stg_freight",
+        "kind": "m",
+        "expression": "let\n    Source = Csv.Document(File.Contents(DataRoot & \"/raw/freight.csv\"), [Delimiter=\",\", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),\n    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),\n    Typed = Table.TransformColumnTypes(Headers, {{\"ShipmentID\", type text}, {\"FreightPLN\", type number}}, \"en-US\")\nin\n    Typed"
+      },
+      {
+        "name": "stg_targets",
+        "kind": "m",
+        "expression": "let\n    Source = Csv.Document(File.Contents(DataRoot & \"/raw/targets.csv\"), [Delimiter=\",\", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),\n    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),\n    Typed = Table.TransformColumnTypes(Headers, {{\"ClientID\", type text}, {\"TargetMargin\", type number}}, \"en-US\")\nin\n    Typed"
+      }
+    ],
+    "tables": [
+      {
+        "name": "Date",
+        "columns": [
+          {
+            "name": "Date",
+            "dataType": "dateTime",
+            "sourceColumn": "Date",
+            "summarizeBy": "none",
+            "formatString": "yyyy-MM-dd",
+            "isKey": true,
+            "annotations": [
+              {
+                "name": "UnderlyingDateTimeDataType",
+                "value": "Date"
+              }
+            ]
+          },
+          {
+            "name": "Year",
+            "dataType": "int64",
+            "sourceColumn": "Year",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "Month",
+            "dataType": "int64",
+            "sourceColumn": "Month",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "YearMonth",
+            "dataType": "string",
+            "sourceColumn": "YearMonth",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Quarter",
+            "dataType": "string",
+            "sourceColumn": "Quarter",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Date",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = Csv.Document(File.Contents(DataRoot & \"/dimensions/Date.csv\"), [Delimiter=\",\", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),",
+                "    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+                "    Typed = Table.TransformColumnTypes(Headers, {{\"Date\", type date}, {\"Year\", Int64.Type}, {\"Month\", Int64.Type}, {\"YearMonth\", type text}, {\"Quarter\", type text}}, \"en-US\")",
+                "in",
+                "    Typed"
+              ]
+            }
+          }
+        ],
+        "dataCategory": "Time"
+      },
+      {
+        "name": "Client",
+        "columns": [
+          {
+            "name": "ClientID",
+            "dataType": "string",
+            "sourceColumn": "ClientID",
+            "summarizeBy": "none",
+            "isHidden": true
+          },
+          {
+            "name": "Client",
+            "dataType": "string",
+            "sourceColumn": "Client",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Segment",
+            "dataType": "string",
+            "sourceColumn": "Segment",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Market",
+            "dataType": "string",
+            "sourceColumn": "Market",
+            "summarizeBy": "none"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Client",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = Csv.Document(File.Contents(DataRoot & \"/dimensions/Client.csv\"), [Delimiter=\",\", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),",
+                "    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+                "    Typed = Table.TransformColumnTypes(Headers, {{\"ClientID\", type text}, {\"Client\", type text}, {\"Segment\", type text}, {\"Market\", type text}}, \"en-US\")",
+                "in",
+                "    Typed"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "Product",
+        "columns": [
+          {
+            "name": "ProductID",
+            "dataType": "string",
+            "sourceColumn": "ProductID",
+            "summarizeBy": "none",
+            "isHidden": true
+          },
+          {
+            "name": "Product",
+            "dataType": "string",
+            "sourceColumn": "Product",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "Family",
+            "dataType": "string",
+            "sourceColumn": "Family",
+            "summarizeBy": "none"
+          },
+          {
+            "name": "StandardUnitCost",
+            "dataType": "int64",
+            "sourceColumn": "StandardUnitCost",
+            "summarizeBy": "sum"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Product",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = Csv.Document(File.Contents(DataRoot & \"/dimensions/Product.csv\"), [Delimiter=\",\", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),",
+                "    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+                "    Typed = Table.TransformColumnTypes(Headers, {{\"ProductID\", type text}, {\"Product\", type text}, {\"Family\", type text}, {\"StandardUnitCost\", Int64.Type}}, \"en-US\")",
+                "in",
+                "    Typed"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "Sales",
+        "columns": [
+          {
+            "name": "LineID",
+            "dataType": "string",
+            "sourceColumn": "LineID",
+            "summarizeBy": "none",
+            "isHidden": true
+          },
+          {
+            "name": "ShipmentID",
+            "dataType": "string",
+            "sourceColumn": "ShipmentID",
+            "summarizeBy": "none",
+            "isHidden": true
+          },
+          {
+            "name": "Date",
+            "dataType": "dateTime",
+            "sourceColumn": "Date",
+            "summarizeBy": "none",
+            "formatString": "yyyy-MM-dd"
+          },
+          {
+            "name": "ClientID",
+            "dataType": "string",
+            "sourceColumn": "ClientID",
+            "summarizeBy": "none",
+            "isHidden": true
+          },
+          {
+            "name": "ProductID",
+            "dataType": "string",
+            "sourceColumn": "ProductID",
+            "summarizeBy": "none",
+            "isHidden": true
+          },
+          {
+            "name": "Quantity",
+            "dataType": "int64",
+            "sourceColumn": "Quantity",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "GrossPLN",
+            "dataType": "double",
+            "sourceColumn": "GrossPLN",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "DiscountPLN",
+            "dataType": "double",
+            "sourceColumn": "DiscountPLN",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "NetRevenuePLN",
+            "dataType": "double",
+            "sourceColumn": "NetRevenuePLN",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "COGSPLN",
+            "dataType": "double",
+            "sourceColumn": "COGSPLN",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "AllocatedFreightPLN",
+            "dataType": "double",
+            "sourceColumn": "AllocatedFreightPLN",
+            "summarizeBy": "sum"
+          },
+          {
+            "name": "TargetContributionPLN",
+            "dataType": "double",
+            "sourceColumn": "TargetContributionPLN",
+            "summarizeBy": "sum"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Sales",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    A = Table.NestedJoin(stg_sales, {\"LineID\"}, stg_cogs, {\"LineID\"}, \"Cost\", JoinKind.LeftOuter),",
+                "    B = Table.ExpandTableColumn(A, \"Cost\", {\"COGSPLN\"}),",
+                "    ShipmentTotals = Table.Group(stg_sales, {\"ShipmentID\"}, {{\"ShipmentRevenue\", each List.Sum([NetRevenuePLN]), type number}}),",
+                "    C = Table.NestedJoin(B, {\"ShipmentID\"}, ShipmentTotals, {\"ShipmentID\"}, \"Total\", JoinKind.LeftOuter),",
+                "    D = Table.ExpandTableColumn(C, \"Total\", {\"ShipmentRevenue\"}),",
+                "    E = Table.NestedJoin(D, {\"ShipmentID\"}, stg_freight, {\"ShipmentID\"}, \"Freight\", JoinKind.LeftOuter),",
+                "    F = Table.ExpandTableColumn(E, \"Freight\", {\"FreightPLN\"}),",
+                "    G = Table.NestedJoin(F, {\"ClientID\"}, stg_targets, {\"ClientID\"}, \"Target\", JoinKind.LeftOuter),",
+                "    H = Table.ExpandTableColumn(G, \"Target\", {\"TargetMargin\"}),",
+                "    Checked = if Table.RowCount(H) <> Table.RowCount(stg_sales) or List.Contains(H[COGSPLN], null) or List.Contains(H[FreightPLN], null) or List.Contains(H[TargetMargin], null) or List.Min(H[ShipmentRevenue]) <= 0 then error \"Invalid join or nonpositive allocation denominator\" else H,",
+                "    I = Table.AddColumn(Checked, \"AllocatedFreightPLN\", each [FreightPLN]*[NetRevenuePLN]/[ShipmentRevenue], type number),",
+                "    J = Table.AddColumn(I, \"TargetContributionPLN\", each [NetRevenuePLN]*[TargetMargin], type number)",
+                "in J"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "Sprzedaż brutto",
+            "expression": "SUM(Sales[GrossPLN])",
+            "formatString": "#,0.00",
+            "description": "Sprzedaż brutto",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Rabaty",
+            "expression": "SUM(Sales[DiscountPLN])",
+            "formatString": "#,0.00",
+            "description": "Rabaty",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Przychód netto",
+            "expression": "SUM(Sales[NetRevenuePLN])",
+            "formatString": "#,0.00",
+            "description": "Przychód netto",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Koszt własny",
+            "expression": "SUM(Sales[COGSPLN])",
+            "formatString": "#,0.00",
+            "description": "Koszt własny",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Transport przypisany",
+            "expression": "SUM(Sales[AllocatedFreightPLN])",
+            "formatString": "#,0.00",
+            "description": "Transport przypisany",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Docelowa kontrybucja",
+            "expression": "SUM(Sales[TargetContributionPLN])",
+            "formatString": "#,0.00",
+            "description": "Docelowa kontrybucja",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Marża brutto",
+            "expression": "[Przychód netto]-[Koszt własny]",
+            "formatString": "#,0.00",
+            "description": "Marża brutto",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Kontrybucja",
+            "expression": "[Marża brutto]-[Transport przypisany]",
+            "formatString": "#,0.00",
+            "description": "Kontrybucja",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Marża po dostawie",
+            "expression": "DIVIDE([Kontrybucja],[Przychód netto])",
+            "formatString": "0.0%",
+            "description": "Marża po dostawie",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Rabaty %",
+            "expression": "DIVIDE([Rabaty],[Sprzedaż brutto])",
+            "formatString": "0.0%",
+            "description": "Rabaty %",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Transport % przychodu",
+            "expression": "DIVIDE([Transport przypisany],[Przychód netto])",
+            "formatString": "0.0%",
+            "description": "Transport % przychodu",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Luka do celu",
+            "expression": "[Kontrybucja]-[Docelowa kontrybucja]",
+            "formatString": "#,0.00",
+            "description": "Luka do celu",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Klienci poniżej celu",
+            "expression": "COUNTROWS(FILTER(VALUES(Client[ClientID]),CALCULATE([Luka do celu])<0))",
+            "formatString": "#,0",
+            "description": "Klienci poniżej celu",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Wartość poprzedni miesiąc",
+            "expression": "CALCULATE([Przychód netto], DATEADD('Date'[Date],-1,MONTH))",
+            "formatString": "#,0.00",
+            "description": "Wartość poprzedni miesiąc",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Zmiana m/m %",
+            "expression": "DIVIDE([Przychód netto]-[Wartość poprzedni miesiąc],[Wartość poprzedni miesiąc])",
+            "formatString": "0.0%",
+            "description": "Porównanie bieżącego zbioru dat z przesuniętym o miesiąc; na karcie wybierz jeden miesiąc.",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Wartość poprzedni rok",
+            "expression": "CALCULATE([Przychód netto], SAMEPERIODLASTYEAR('Date'[Date]))",
+            "formatString": "#,0.00",
+            "description": "Wartość poprzedni rok",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Zmiana r/r %",
+            "expression": "DIVIDE([Przychód netto]-[Wartość poprzedni rok],[Wartość poprzedni rok])",
+            "formatString": "0.0%",
+            "description": "Zmiana r/r %",
+            "displayFolder": "KPI"
+          },
+          {
+            "name": "Wartość YTD",
+            "expression": "TOTALYTD([Przychód netto],'Date'[Date])",
+            "formatString": "#,0.00",
+            "description": "Wartość YTD",
+            "displayFolder": "KPI"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "rel_Date",
+        "fromTable": "Sales",
+        "fromColumn": "Date",
+        "toTable": "Date",
+        "toColumn": "Date",
+        "crossFilteringBehavior": "oneDirection",
+        "fromCardinality": "many",
+        "toCardinality": "one",
+        "isActive": true
+      },
+      {
+        "name": "rel_Client",
+        "fromTable": "Sales",
+        "fromColumn": "ClientID",
+        "toTable": "Client",
+        "toColumn": "ClientID",
+        "crossFilteringBehavior": "oneDirection",
+        "fromCardinality": "many",
+        "toCardinality": "one",
+        "isActive": true
+      },
+      {
+        "name": "rel_Product",
+        "fromTable": "Sales",
+        "fromColumn": "ProductID",
+        "toTable": "Product",
+        "toColumn": "ProductID",
+        "crossFilteringBehavior": "oneDirection",
+        "fromCardinality": "many",
+        "toCardinality": "one",
+        "isActive": true
+      }
+    ],
+    "annotations": [
+      {
+        "name": "PBI_ProTooling",
+        "value": "[\"DevMode\"]"
+      }
+    ]
+  }
+}

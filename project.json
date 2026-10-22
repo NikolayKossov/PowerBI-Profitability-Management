@@ -1,0 +1,15 @@
+{
+  "slug": "PowerBI-Profitability-Management",
+  "title": "Profitability Management",
+  "pl": "Rentowność klientów po kosztach dostawy",
+  "accent": "#8D9CFF",
+  "tag": "MANAGEMENT INTELLIGENCE",
+  "fact": "Sales",
+  "grain": "Jedna pozycja faktury sprzedaży (LineID), przypisana do jednej wysyłki.",
+  "question": "Którzy klienci pozostają rentowni po rabatach i przypisaniu kosztów transportu?",
+  "pages": [
+    "01 | Wynik zarządczy",
+    "02 | Klienci i produkty",
+    "03 | Most marży i decyzje"
+  ]
+}

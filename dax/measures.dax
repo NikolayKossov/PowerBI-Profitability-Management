@@ -1,0 +1,71 @@
+// Sprzedaż brutto
+Sprzedaż brutto =
+    SUM(Sales[GrossPLN])
+
+// Rabaty
+Rabaty =
+    SUM(Sales[DiscountPLN])
+
+// Przychód netto
+Przychód netto =
+    SUM(Sales[NetRevenuePLN])
+
+// Koszt własny
+Koszt własny =
+    SUM(Sales[COGSPLN])
+
+// Transport przypisany
+Transport przypisany =
+    SUM(Sales[AllocatedFreightPLN])
+
+// Docelowa kontrybucja
+Docelowa kontrybucja =
+    SUM(Sales[TargetContributionPLN])
+
+// Marża brutto
+Marża brutto =
+    [Przychód netto]-[Koszt własny]
+
+// Kontrybucja
+Kontrybucja =
+    [Marża brutto]-[Transport przypisany]
+
+// Marża po dostawie
+Marża po dostawie =
+    DIVIDE([Kontrybucja],[Przychód netto])
+
+// Rabaty %
+Rabaty % =
+    DIVIDE([Rabaty],[Sprzedaż brutto])
+
+// Transport % przychodu
+Transport % przychodu =
+    DIVIDE([Transport przypisany],[Przychód netto])
+
+// Luka do celu
+Luka do celu =
+    [Kontrybucja]-[Docelowa kontrybucja]
+
+// Klienci poniżej celu
+Klienci poniżej celu =
+    COUNTROWS(FILTER(VALUES(Client[ClientID]),CALCULATE([Luka do celu])<0))
+
+// Wartość poprzedni miesiąc
+Wartość poprzedni miesiąc =
+    CALCULATE([Przychód netto], DATEADD('Date'[Date],-1,MONTH))
+
+// Porównanie bieżącego zbioru dat z przesuniętym o miesiąc; na karcie wybierz jeden miesiąc.
+Zmiana m/m % =
+    DIVIDE([Przychód netto]-[Wartość poprzedni miesiąc],[Wartość poprzedni miesiąc])
+
+// Wartość poprzedni rok
+Wartość poprzedni rok =
+    CALCULATE([Przychód netto], SAMEPERIODLASTYEAR('Date'[Date]))
+
+// Zmiana r/r %
+Zmiana r/r % =
+    DIVIDE([Przychód netto]-[Wartość poprzedni rok],[Wartość poprzedni rok])
+
+// Wartość YTD
+Wartość YTD =
+    TOTALYTD([Przychód netto],'Date'[Date])

@@ -1,0 +1,18 @@
+{
+  "Przychód netto": {
+    "value": 48144601.59000002,
+    "unit": "PLN"
+  },
+  "Kontrybucja": {
+    "value": 11394899.100000067,
+    "unit": "PLN"
+  },
+  "Marża po dostawie": {
+    "value": 0.23668072273272003,
+    "unit": "%"
+  },
+  "Transport / przychód": {
+    "value": 0.020129595593149464,
+    "unit": "%"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "Profitability Management",
+  "dataColors": [
+    "#8D9CFF",
+    "#284B63",
+    "#E47C61",
+    "#A9BBCB",
+    "#597A91"
+  ],
+  "background": "#F2F5F8",
+  "foreground": "#152C44",
+  "tableAccent": "#8D9CFF",
+  "textClasses": {
+    "label": {
+      "fontFace": "Segoe UI",
+      "fontSize": 11
+    },
+    "title": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 13
+    }
+  }
+}
